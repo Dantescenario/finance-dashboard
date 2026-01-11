@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Personal Finance Dashboard</h1>
+        <div class="actions">
+            <a href="/upload" class="btn">Upload CSV</a>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="expenseChart"></canvas>
+        </div>
+    </div>  
+
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+    <script>
+    const chartLabels = {{ labels | safe }};
+    const chartValues = {{ values | safe }};
+
+    const ctx = document.getElementById('expenseChart').getContext('2d');
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: chartLabels,
+            datasets: [{
+                label: 'Spending by Category',
+                data: chartValues,
+                backgroundColor: [
+                    '#3498db', '#e74c3c', '#2ecc71', '#f1c40f', '#9b59b6'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+</script>
+</body>
+</html>
