@@ -29,24 +29,25 @@ with app.app_context():
 # 4. Main route
 @app.route('/')
 def index():
-    # fetch all transaction from the database
     transactions = Transaction.query.all()
 
-    # use pandas to group data by category
+    total_spent = 0 # Default if no data exists
+    
     if transactions:
-        data =  [{'Category': t.category, 'Amount': t.amount} for t in transactions]
+        data = [{'Category': t.category, 'Amount': t.amount} for t in transactions]
         df = pd.DataFrame(data)
 
-        # Sum the amount for each category
+        #calculate total
+        total_spent = df['Amount'].sum()
+        
         summary = df.groupby('Category')['Amount'].sum().reset_index()
-
-        # Prepare labels and values for chart.js
         labels = summary['Category'].tolist()
         values = summary['Amount'].tolist()
     else:
         labels, values = [], []
 
-    return render_template('index.html', labels=labels, values=values)
+    # Pass 'transactions' into the template
+    return render_template('index.html', labels=labels, values=values, transactions=transactions,total_spent=total_spent)
 
     
    
@@ -93,6 +94,16 @@ def upload_file():
         except Exception as e:
             return f"Error procssing file: {e}"
     return "Invalid file type.Please upload a CSV."
+
+@app.route('/clear')
+def clear_data():
+    try:
+        #To delete all rows in the transaction table
+        db.session.query(Transaction).delete()
+        db.session.commit()
+        return redirect(url_for('index'))
+    except Exception as e:
+        return f"Error clearing data: {e}"
 
 if __name__ == "__main__":
     app.run(debug=True)
